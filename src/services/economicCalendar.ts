@@ -2,8 +2,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { get, ref } from 'firebase/database';
 import { database } from './firebase';
 
-const API_URL =
-  'https://nfs.faireconomy.media/ff_calendar_thisweek.json?version=cfd9a298b1227ac550d26e47b069b8a4';
+// const API_URL =
+//   'https://nfs.faireconomy.media/ff_calendar_thisweek.json?version=cfd9a298b1227ac550d26e47b069b8a4';
 
 const CACHE_KEY = 'economic_calendar';
 

@@ -3,6 +3,12 @@ import * as Notifications from 'expo-notifications';
 
 const SCHEDULED_NOTIFICATIONS_KEY = 'scheduled_news_notifications';
 
+export async function getScheduledNewsNotificationCount() {
+  const ids = await getScheduledNotificationIds();
+
+  return ids.length;
+}
+
 export async function getScheduledNotificationIds(): Promise<string[]> {
   const stored = await AsyncStorage.getItem(SCHEDULED_NOTIFICATIONS_KEY);
 

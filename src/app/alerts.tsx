@@ -6,6 +6,7 @@ import {
   saveNotificationSettings,
   type Currency,
 } from '@/services/notificationSettings';
+import { getScheduledNewsNotificationCount } from '@/services/scheduledNotifications';
 import * as Notifications from 'expo-notifications';
 import { useEffect, useState } from 'react';
 import {
@@ -23,6 +24,9 @@ import { styles } from './alerts.styles';
 
 const MINUTES_INPUT_ACCESSORY_ID = 'minutes-input-accessory';
 
+const MIN_NOTIFICATION_MINUTES = 1;
+const MAX_NOTIFICATION_MINUTES = 180;
+
 export default function AlertsScreen() {
   const [settingsLoaded, setSettingsLoaded] = useState(false);
 
@@ -34,6 +38,8 @@ export default function AlertsScreen() {
   const [afterEnabled, setAfterEnabled] = useState(false);
   const [afterMinutes, setAfterMinutes] = useState('8');
 
+  const [scheduledCount, setScheduledCount] = useState(0);
+
   useEffect(() => {
     async function loadSettings() {
       const settings = await getNotificationSettings();
@@ -43,6 +49,11 @@ export default function AlertsScreen() {
       setBeforeMinutes(settings.beforeMinutes);
       setAfterEnabled(settings.afterEnabled);
       setAfterMinutes(settings.afterMinutes);
+
+      const count = await getScheduledNewsNotificationCount();
+
+      setScheduledCount(count);
+
       setSettingsLoaded(true);
     }
 
@@ -68,6 +79,7 @@ export default function AlertsScreen() {
           console.log('Notification settings saved');
 
           const scheduled = await refreshNotificationSchedule();
+          setScheduledCount(scheduled.length);
         } catch (error) {
           console.error('Failed to update notification settings:', error);
         }
@@ -100,6 +112,7 @@ export default function AlertsScreen() {
     return requestedPermissions.status === 'granted';
   };
 
+  // biome-ignore lint/correctness/noUnusedVariables: <test function>
   const sendTestNotification = async () => {
     const hasPermission = await requestNotificationPermissions();
 
@@ -139,6 +152,28 @@ export default function AlertsScreen() {
 
   const selectNone = () => {
     setSelectedCurrencies([]);
+  };
+
+  const normaliseMinutes = (value: string) => {
+    const parsed = Number(value);
+
+    if (!Number.isFinite(parsed)) {
+      return '1';
+    }
+
+    return String(
+      Math.min(
+        MAX_NOTIFICATION_MINUTES,
+        Math.max(MIN_NOTIFICATION_MINUTES, parsed),
+      ),
+    );
+  };
+
+  const finishEditingMinutes = () => {
+    setBeforeMinutes(normaliseMinutes(beforeMinutes));
+    setAfterMinutes(normaliseMinutes(afterMinutes));
+
+    Keyboard.dismiss();
   };
 
   return (
@@ -227,7 +262,15 @@ export default function AlertsScreen() {
 
               <TextInput
                 value={beforeMinutes}
-                onChangeText={setBeforeMinutes}
+                onChangeText={(value) => {
+                  const numbersOnly = value.replace(/[^0-9]/g, '');
+
+                  setBeforeMinutes(numbersOnly);
+                }}
+                onEndEditing={() => {
+                  setBeforeMinutes(normaliseMinutes(beforeMinutes));
+                }}
+                selectTextOnFocus
                 inputAccessoryViewID={MINUTES_INPUT_ACCESSORY_ID}
                 keyboardType='number-pad'
                 editable={beforeEnabled}
@@ -274,7 +317,15 @@ export default function AlertsScreen() {
 
               <TextInput
                 value={afterMinutes}
-                onChangeText={setAfterMinutes}
+                onChangeText={(value) => {
+                  const numbersOnly = value.replace(/[^0-9]/g, '');
+
+                  setAfterMinutes(numbersOnly);
+                }}
+                onEndEditing={() => {
+                  setAfterMinutes(normaliseMinutes(afterMinutes));
+                }}
+                selectTextOnFocus
                 inputAccessoryViewID={MINUTES_INPUT_ACCESSORY_ID}
                 keyboardType='number-pad'
                 editable={afterEnabled}
@@ -298,8 +349,42 @@ export default function AlertsScreen() {
           </View>
         </View>
 
+        {/* Status */}
+        <View style={styles.statusCard}>
+          <View style={styles.statusRow}>
+            <Text style={styles.statusLabel}>Notifications</Text>
+
+            <Text
+              style={[
+                styles.statusValue,
+                (beforeEnabled || afterEnabled) && selectedCurrencies.length > 0
+                  ? styles.statusActive
+                  : styles.statusInactive,
+              ]}
+            >
+              {(beforeEnabled || afterEnabled) && selectedCurrencies.length > 0
+                ? 'Active'
+                : 'Inactive'}
+            </Text>
+          </View>
+
+          <View style={styles.statusRow}>
+            <Text style={styles.statusLabel}>Currencies</Text>
+
+            <Text style={styles.statusValue}>
+              {selectedCurrencies.length} selected
+            </Text>
+          </View>
+
+          <View style={styles.statusRow}>
+            <Text style={styles.statusLabel}>Scheduled alerts</Text>
+
+            <Text style={styles.statusValue}>{scheduledCount}</Text>
+          </View>
+        </View>
+
         {/* Test notification */}
-        <View style={styles.testSection}>
+        {/* <View style={styles.testSection}>
           <Text style={styles.testTitle}>Notification Testing</Text>
 
           <Text style={styles.testDescription}>
@@ -311,22 +396,14 @@ export default function AlertsScreen() {
               Test Notification - 10 Seconds
             </Text>
           </Pressable>
-        </View>
-
-        <View style={styles.testSection}>
-          <Text style={styles.testTitle}>Scheduler Testing</Text>
-
-          <Text style={styles.testDescription}>
-            Creates a fake USD high-impact event 2 minutes from now.
-          </Text>
-        </View>
+        </View> */}
       </ScrollView>
       {/* </Pressable> */}
 
       {/* Inupt accessory */}
       <InputAccessoryView nativeID={MINUTES_INPUT_ACCESSORY_ID}>
         <View style={styles.keyboardToolbar}>
-          <Pressable onPress={Keyboard.dismiss}>
+          <Pressable onPress={finishEditingMinutes}>
             <Text style={styles.keyboardDone}>Done</Text>
           </Pressable>
         </View>

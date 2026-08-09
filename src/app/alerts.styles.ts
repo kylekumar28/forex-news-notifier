@@ -188,6 +188,38 @@ export const styles = StyleSheet.create({
     lineHeight: 18,
   },
 
+  // status
+  statusCard: {
+    backgroundColor: '#1c1c1e',
+    borderRadius: 14,
+    padding: 16,
+    marginTop: 20,
+  },
+
+  statusRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 5,
+  },
+
+  statusLabel: {
+    color: '#888',
+  },
+
+  statusValue: {
+    color: '#fff',
+    fontWeight: '600',
+  },
+
+  statusActive: {
+    color: '#30d158',
+  },
+
+  statusInactive: {
+    color: '#ff453a',
+  },
+
   // test section
   testSection: {
     marginTop: 30,
