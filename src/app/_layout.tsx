@@ -1,6 +1,9 @@
+/** biome-ignore-all assist/source/organizeImports: <ddd> */
+import { refreshNotificationSchedule } from '@/services/notificationManager';
 import { Ionicons } from '@expo/vector-icons';
 import * as Notifications from 'expo-notifications';
 import { Tabs } from 'expo-router';
+import { useEffect } from 'react';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -12,6 +15,25 @@ Notifications.setNotificationHandler({
 });
 
 export default function TabsLayout() {
+  useEffect(() => {
+    async function refreshSchedule() {
+      try {
+        const scheduled = await refreshNotificationSchedule();
+
+        console.log(
+          `Startup notification refresh complete: ${scheduled.length} notifications`,
+        );
+      } catch (error) {
+        console.error(
+          'Failed to refresh notification schedule on startup:',
+          error,
+        );
+      }
+    }
+
+    refreshSchedule();
+  }, []);
+
   return (
     <Tabs
       screenOptions={{

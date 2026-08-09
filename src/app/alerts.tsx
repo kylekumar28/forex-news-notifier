@@ -1,4 +1,5 @@
 /** biome-ignore-all assist/source/organizeImports: <Executive decision> */
+import { refreshNotificationSchedule } from '@/services/notificationManager';
 import {
   CURRENCIES,
   getNotificationSettings,
@@ -53,13 +54,31 @@ export default function AlertsScreen() {
       return;
     }
 
-    saveNotificationSettings({
-      selectedCurrencies,
-      beforeEnabled,
-      beforeMinutes,
-      afterEnabled,
-      afterMinutes,
-    });
+    const timeout = setTimeout(() => {
+      async function saveAndRefresh() {
+        try {
+          await saveNotificationSettings({
+            selectedCurrencies,
+            beforeEnabled,
+            beforeMinutes,
+            afterEnabled,
+            afterMinutes,
+          });
+
+          console.log('Notification settings saved');
+
+          const scheduled = await refreshNotificationSchedule();
+        } catch (error) {
+          console.error('Failed to update notification settings:', error);
+        }
+      }
+
+      saveAndRefresh();
+    }, 500);
+
+    return () => {
+      clearTimeout(timeout);
+    };
   }, [
     settingsLoaded,
     selectedCurrencies,
@@ -120,26 +139,6 @@ export default function AlertsScreen() {
 
   const selectNone = () => {
     setSelectedCurrencies([]);
-  };
-
-  const testScheduler = async () => {
-    const eventTime = new Date(Date.now() + 2 * 60 * 1000);
-
-    const fakeEvent = {
-      title: 'Test CPI',
-      country: 'USD',
-      date: eventTime.toISOString(),
-      impact: 'High' as const,
-      forecast: '0.3%',
-      previous: '0.2%',
-    };
-
-    const settings = await getNotificationSettings();
-
-    console.log('Fake event:', fakeEvent);
-    console.log('Notification settings:', settings);
-
-    console.log('Scheduled notifications:');
   };
 
   return (
@@ -320,10 +319,6 @@ export default function AlertsScreen() {
           <Text style={styles.testDescription}>
             Creates a fake USD high-impact event 2 minutes from now.
           </Text>
-
-          <Pressable style={styles.testButton} onPress={testScheduler}>
-            <Text style={styles.testButtonText}>Test Scheduler</Text>
-          </Pressable>
         </View>
       </ScrollView>
       {/* </Pressable> */}
