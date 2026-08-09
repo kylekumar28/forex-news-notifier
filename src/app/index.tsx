@@ -1,98 +1,163 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
+/** biome-ignore-all assist/source/organizeImports: <Executive decision> */
+import { rebuildWeeklyNotificationSchedule } from '@/services/notificationScheduler';
+import { getNotificationSettings } from '@/services/notificationSettings';
+import { groupEventsByDay } from '@/utils/economicCalendar';
+import { createNewsWindows } from '@/utils/newsWindows';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, SectionList, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
-
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
-  return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
-}
+import {
+  type EconomicEvent,
+  getEconomicCalendar,
+} from '../services/economicCalendar';
+import { styles } from './index.styles';
 
 export default function HomeScreen() {
-  return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
+  const [events, setEvents] = useState<EconomicEvent[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
+  useEffect(() => {
+    const loadEvents = async () => {
+      try {
+        setLoading(true);
+        setError(null);
 
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
+        const data = await getEconomicCalendar();
 
-        {Platform.OS === 'web' && <WebBadge />}
+        const windows = createNewsWindows(data);
+
+        console.log('NEWS WINDOWS');
+        console.log(windows);
+
+        const settings = await getNotificationSettings();
+
+        const scheduled = await rebuildWeeklyNotificationSchedule(
+          windows,
+          settings,
+        );
+
+        console.log('Scheduled:', scheduled);
+
+        const highImpactEvents = data.filter(
+          (event) => event.impact === 'High',
+        );
+
+        console.log(highImpactEvents);
+
+        setEvents(highImpactEvents);
+      } catch (error) {
+        console.error(error);
+
+        setError(
+          error instanceof Error ? error.message : 'Something went wrong',
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadEvents();
+  }, []);
+
+  const sections = groupEventsByDay(events);
+
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
+
+    return date.toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.center}>
+        <ActivityIndicator size='large' />
+        <Text style={styles.loadingText}>Loading economic calendar...</Text>
       </SafeAreaView>
-    </ThemedView>
+    );
+  }
+
+  if (error) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Text style={styles.error}>Error: {error}</Text>
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <Text style={styles.heading}>High Impact News</Text>
+
+      <Text style={styles.subheading}>{events.length} events this week</Text>
+
+      <SectionList
+        sections={sections}
+        keyExtractor={(item) => `${item.country}-${item.title}-${item.date}`}
+        contentContainerStyle={styles.list}
+        stickySectionHeadersEnabled={false}
+        renderSectionHeader={({ section }) => (
+          <Text style={styles.dayHeading}>{section.title}</Text>
+        )}
+        renderItem={({ item }) => (
+          <View style={styles.card}>
+            <View style={styles.cardHeader}>
+              <View style={styles.currencyBadge}>
+                <Text style={styles.currency}>{item.country}</Text>
+              </View>
+              <Text style={styles.time}>{formatTime(item.date)}</Text>
+
+              <View style={styles.impactBadge}>
+                <Text style={styles.impact}>HIGH</Text>
+              </View>
+            </View>
+
+            <Text style={styles.title}>{item.title}</Text>
+
+            <View style={styles.dataRow}>
+              <Text style={styles.data}>Forecast: {item.forecast || '-'}</Text>
+              <Text style={styles.data}>Previous: {item.previous || '-'}</Text>
+            </View>
+          </View>
+        )}
+      />
+
+      {/* <FlatList
+        data={events}
+        keyExtractor={(item, index) =>
+          `${item.country}-${item.title}-${item.date}-${index}`
+        }
+        contentContainerStyle={styles.list}
+        renderItem={({ item }) => (
+          <View style={styles.card}>
+            <View style={styles.topRow}>
+              <View style={styles.currencyBadge}>
+                <Text style={styles.currency}>{item.country}</Text>
+              </View>
+
+              <View style={styles.impactBadge}>
+                <Text style={styles.impact}>HIGH</Text>
+              </View>
+            </View>
+
+            <Text style={styles.title}>{item.title}</Text>
+
+            <Text style={styles.date}>{formatDate(item.date)}</Text>
+
+            <View style={styles.dataRow}>
+              <Text style={styles.data}>Forecast: {item.forecast || '-'}</Text>
+
+              <Text style={styles.data}>Previous: {item.previous || '-'}</Text>
+            </View>
+          </View>
+        )}
+        ListEmptyComponent={
+          <Text style={styles.emptyText}>No high impact events this week.</Text>
+        }
+      /> */}
+    </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    flexDirection: 'row',
-  },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
-  },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
-  },
-  title: {
-    textAlign: 'center',
-  },
-  code: {
-    textTransform: 'uppercase',
-  },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
-  },
-});
