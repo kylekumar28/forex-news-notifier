@@ -21,7 +21,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { styles } from './alerts.styles';
+import { styles } from '../styles/alerts.styles';
 
 const MINUTES_INPUT_ACCESSORY_ID = 'minutes-input-accessory';
 
