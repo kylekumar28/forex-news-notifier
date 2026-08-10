@@ -220,6 +220,41 @@ export const styles = StyleSheet.create({
     color: '#ff453a',
   },
 
+  // Permissions
+  permissionCard: {
+  backgroundColor: '#1c1c1e',
+  borderWidth: 1,
+  borderColor: '#453333',
+  borderRadius: 14,
+  padding: 16,
+  marginTop: 18,
+},
+
+permissionTitle: {
+  color: '#ff453a',
+  fontSize: 16,
+  fontWeight: '700',
+},
+
+permissionDescription: {
+  color: '#aaa',
+  marginTop: 6,
+  lineHeight: 19,
+},
+
+permissionButton: {
+  backgroundColor: '#dd3b30',
+  paddingVertical: 12,
+  borderRadius: 10,
+  alignItems: 'center',
+  marginTop: 14,
+},
+
+permissionButtonText: {
+  color: '#fff',
+  fontWeight: '700',
+},
+
   // test section
   testSection: {
     marginTop: 30,

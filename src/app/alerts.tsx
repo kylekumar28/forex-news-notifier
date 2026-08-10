@@ -12,6 +12,7 @@ import { useEffect, useState } from 'react';
 import {
   InputAccessoryView,
   Keyboard,
+  Linking,
   Pressable,
   ScrollView,
   Switch,
@@ -27,7 +28,18 @@ const MINUTES_INPUT_ACCESSORY_ID = 'minutes-input-accessory';
 const MIN_NOTIFICATION_MINUTES = 1;
 const MAX_NOTIFICATION_MINUTES = 180;
 
+  type NotificationPermission =
+  | 'loading'
+  | 'granted'
+  | 'denied'
+  | 'undetermined';
+
 export default function AlertsScreen() {
+const [
+  notificationPermission,
+  setNotificationPermission,
+] = useState<NotificationPermission>('loading');
+
   const [settingsLoaded, setSettingsLoaded] = useState(false);
 
   const [selectedCurrencies, setSelectedCurrencies] = useState<Currency[]>([]);
@@ -39,6 +51,7 @@ export default function AlertsScreen() {
   const [afterMinutes, setAfterMinutes] = useState('8');
 
   const [scheduledCount, setScheduledCount] = useState(0);
+  const alertsActive = notificationPermission === "granted" && selectedCurrencies.length > 0 && (beforeEnabled || afterEnabled);
 
   useEffect(() => {
     async function loadSettings() {
@@ -99,6 +112,10 @@ export default function AlertsScreen() {
     afterEnabled,
     afterMinutes,
   ]);
+
+  useEffect(() => {
+    checkNotificationPermission();
+  }, []);
 
   const requestNotificationPermissions = async () => {
     const currentPermissions = await Notifications.getPermissionsAsync();
@@ -176,6 +193,54 @@ export default function AlertsScreen() {
     Keyboard.dismiss();
   };
 
+  const checkNotificationPermission = async () => {
+  const permissions =
+    await Notifications.getPermissionsAsync();
+
+  if (permissions.status === 'granted') {
+    setNotificationPermission('granted');
+    return;
+  }
+
+  if (permissions.status === 'undetermined') {
+    setNotificationPermission('undetermined');
+    return;
+  }
+
+  setNotificationPermission('denied');
+};
+
+const enableNotifications = async () => {
+  const current =
+    await Notifications.getPermissionsAsync();
+
+  if (current.status === 'granted') {
+    setNotificationPermission('granted');
+    return;
+  }
+
+  if (current.status === 'denied') {
+    await Linking.openSettings();
+    return;
+  }
+
+  const requested =
+    await Notifications.requestPermissionsAsync();
+
+  if (requested.status === 'granted') {
+    setNotificationPermission('granted');
+
+    const scheduled =
+      await refreshNotificationSchedule();
+
+    setScheduledCount(scheduled.length);
+
+    return;
+  }
+
+  setNotificationPermission('denied');
+};
+
   return (
     <SafeAreaView style={styles.container}>
       {/* <Pressable style={{ flex: 1 }} onPress={Keyboard.dismiss}> */}
@@ -189,6 +254,20 @@ export default function AlertsScreen() {
         <Text style={styles.subheading}>
           Configure your economic news notifications.
         </Text>
+
+        {notificationPermission !== 'loading' && notificationPermission !== 'granted' && (
+          <View style={styles.permissionCard}>
+            <Text style={styles.permissionTitle}>Notifications are disabled</Text>
+
+            <Text style={styles.permissionDescription}>Enable notifications to receive your high-impact news warnings and post-news alerts.</Text>
+
+            <Pressable style={styles.permissionButton} onPress={enableNotifications}>
+              <Text style={styles.permissionButtonText}>
+                {notificationPermission === 'denied' ? 'Open Notification Settings' : 'Enable notifications'}
+              </Text>
+            </Pressable>
+          </View>
+        )}
 
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
@@ -357,14 +436,12 @@ export default function AlertsScreen() {
             <Text
               style={[
                 styles.statusValue,
-                (beforeEnabled || afterEnabled) && selectedCurrencies.length > 0
+                alertsActive
                   ? styles.statusActive
                   : styles.statusInactive,
               ]}
             >
-              {(beforeEnabled || afterEnabled) && selectedCurrencies.length > 0
-                ? 'Active'
-                : 'Inactive'}
+              {alertsActive ? 'Active' : 'Inactive'}
             </Text>
           </View>
 
