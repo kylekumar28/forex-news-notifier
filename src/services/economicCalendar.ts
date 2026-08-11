@@ -50,28 +50,18 @@ export async function getEconomicCalendar(): Promise<EconomicEvent[]> {
   }
 }
 
-// export async function getEconomicCalendar(): Promise<EconomicEvent[]> {
-//   const cached = await AsyncStorage.getItem(CACHE_KEY);
+export async function getEconomicCalendarUpdatedAt(): Promise<string | null> {
+  try {
+    const snapshot = await get(ref(database, 'economicCalendar/updatedAt'))
 
-//   if (cached) {
-//     console.log('Using cached economic calendar');
+    if (!snapshot.exists()) {
+      return null;
+    }
 
-//     const events: EconomicEvent[] = JSON.parse(cached);
+    return String(snapshot.val());
+  } catch (error) {
+    console.error('Failed to get calendar updated time:', error);
 
-//     return events;
-//   }
-
-//   console.log('No cache found - fetching Faireconomy');
-
-//   const response = await fetch(API_URL);
-
-//   if (!response.ok) {
-//     throw new Error(`Calendar API returned ${response.status}`);
-//   }
-
-//   const events: EconomicEvent[] = await response.json();
-
-//   await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(events));
-
-//   return events;
-// }
+    return null;
+  }
+}

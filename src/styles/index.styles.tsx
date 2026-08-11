@@ -13,6 +13,16 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  headingRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+
+  updatedAt: {
+    color: '#666',
+    fontSize: 11,
+  },
   heading: {
     color: 'white',
     fontSize: 20,

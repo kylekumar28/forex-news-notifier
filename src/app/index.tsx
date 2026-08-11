@@ -7,11 +7,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   type EconomicEvent,
   getEconomicCalendar,
+  getEconomicCalendarUpdatedAt,
 } from '../services/economicCalendar';
 import { styles } from '../styles/index.styles';
 
 export default function HomeScreen() {
   const [events, setEvents] = useState<EconomicEvent[]>([]);
+  const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -21,12 +23,14 @@ export default function HomeScreen() {
         setLoading(true);
         setError(null);
 
-        const data = await getEconomicCalendar();
+        // const data = await getEconomicCalendar();
+        const [data, calendarUpdatedAt] = await Promise.all([getEconomicCalendar(), getEconomicCalendarUpdatedAt()]);
 
         const highImpactEvents = data.filter(
           (event) => event.impact === 'High',
         );
 
+        setUpdatedAt(calendarUpdatedAt);
         setEvents(highImpactEvents);
       } catch (error) {
         console.error(error);
@@ -72,7 +76,11 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.heading}>High Impact News</Text>
+      <View style={styles.headingRow}>
+        <Text style={styles.heading}>High Impact News</Text>
+
+        {updatedAt && (<Text style={styles.updatedAt}>Updated {formatTime(updatedAt)}</Text>)}
+      </View>
 
       <Text style={styles.subheading}>{events.length} events this week</Text>
 
