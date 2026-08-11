@@ -109,4 +109,11 @@ export const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 40,
   },
+  versionText: {
+    color: '#555',
+    fontSize: 11,
+    textAlign: 'center',
+    marginTop: 24,
+    marginBottom: 12,
+  },
 });

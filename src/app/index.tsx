@@ -1,11 +1,12 @@
 /** biome-ignore-all assist/source/organizeImports: <Executive decision> */
+import { AppVersion } from '@/components/AppVersion';
 import { groupEventsByDay } from '@/utils/economicCalendar';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, SectionList, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
-    type EconomicEvent,
-    getEconomicCalendar,
+  type EconomicEvent,
+  getEconomicCalendar,
 } from '../services/economicCalendar';
 import { styles } from '../styles/index.styles';
 
@@ -104,6 +105,7 @@ export default function HomeScreen() {
             </View>
           </View>
         )}
+        ListFooterComponent={<AppVersion style={styles.versionText} />}
       />
     </SafeAreaView>
   );

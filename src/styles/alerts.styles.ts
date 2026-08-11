@@ -288,6 +288,15 @@ permissionButtonText: {
     fontWeight: '700',
   },
 
+  // Version
+  versionText: {
+    color: '#555',
+    fontSize: 11,
+    textAlign: 'center',
+    marginTop: 24,
+    marginBottom: 12,
+  },
+
   // input accessory
   keyboardToolbar: {
     backgroundColor: '#1c1c1e',

@@ -3,6 +3,7 @@ import { AlertStatusCard } from '@/components/alerts/AlertStatusCard';
 import { AlertTimingCard } from '@/components/alerts/AlertTimingCard';
 import { CurrencySelector } from '@/components/alerts/CurrencySelector';
 import { NotificationPermissionCard } from '@/components/alerts/NotificationPermissionCard';
+import { AppVersion } from '@/components/AppVersion';
 import { MINUTES_INPUT_ACCESSORY_ID } from '@/constants/notifications';
 import { useAlertSettings } from '@/hooks/useAlertSettings';
 import { useNotificationPermission } from '@/hooks/useNotificationPermission';
@@ -73,6 +74,8 @@ export default function AlertsScreen() {
         />
 
         <AlertStatusCard active={alertsActive} selectedCurrencies={selectedCurrencies} scheduledCount={scheduledCount} />
+
+        <AppVersion style={styles.versionText} />
       </ScrollView>
       {/* </Pressable> */}
 
