@@ -25,6 +25,10 @@ export async function scheduleNewsWindowNotifications(
   }
 
   const eventTime = new Date(date);
+  const eventTimeLabel = eventTime.toLocaleDateString([], {
+    hour: '2-digit',
+    minute: '2-digit'
+  })
 
   if (Number.isNaN(eventTime.getTime())) {
     console.error('Invalid economic event date:', date);
@@ -44,8 +48,8 @@ export async function scheduleNewsWindowNotifications(
       if (notificationTime.getTime() > Date.now()) {
         const notificationId = await Notifications.scheduleNotificationAsync({
           content: {
-            title: `🔴 ${currency} High-Impact News in ${beforeMinutes}`,
-            body: createBeforeBody(events),
+            title: `🔴 ${currency} News in ${beforeMinutes} mins`,
+            body: createBeforeBody(events, eventTimeLabel),
             sound: true,
             data: {
               type: 'before-news',
@@ -82,9 +86,7 @@ export async function scheduleNewsWindowNotifications(
         const notificationId = await Notifications.scheduleNotificationAsync({
           content: {
             title: `🟢 ${currency} News Buffer Ended`,
-            body: `Your ${afterMinutes}-${minuteLabel(
-              afterMinutes,
-            )} post-news waiting period has ended.`,
+            body: `${eventTimeLabel} event • ${afterMinutes}-mins post-news wait complete`,
             sound: true,
             data: {
               type: 'after-news',
@@ -112,12 +114,12 @@ export async function scheduleNewsWindowNotifications(
   return scheduled;
 }
 
-function createBeforeBody(events: NewsWindow['events']) {
+function createBeforeBody(events: NewsWindow['events'], eventTimeLabel: string) {
   if (events.length === 1) {
-    return `${events[0].title} is approaching.`;
+    return `${eventTimeLabel} • ${events[0].title}`;
   }
 
-  return `${events.length} high-impact releases are scheduled at the same time.`;
+  return `${eventTimeLabel} • ${events.length} high-impact releases`;
 }
 
 function minuteLabel(minutes: number) {
