@@ -40,7 +40,7 @@ export default function AlertsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       {/* <Pressable style={{ flex: 1 }} onPress={Keyboard.dismiss}> */}
       <ScrollView
         keyboardShouldPersistTaps='handled'
