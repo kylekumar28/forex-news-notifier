@@ -32,7 +32,8 @@
             "deploymentTarget": "16.4"
           }
         }
-      ]
+      ],
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true,
