@@ -1,31 +1,36 @@
 /** biome-ignore-all assist/source/organizeImports: <giugiu> */
 import * as Notifications from "expo-notifications";
-import { createNewsWindows } from '../utils/newsWindows';
-import { getEconomicCalendar } from './economicCalendar';
-import { rebuildWeeklyNotificationSchedule } from './notificationScheduler';
-import { getNotificationSettings } from './notificationSettings';
+import { createNewsWindows } from "../utils/newsWindows";
+import { getEconomicCalendar } from "./economicCalendar";
+import { rebuildWeeklyNotificationSchedule } from "./notificationScheduler";
+import { getNotificationSettings } from "./notificationSettings";
 
 export async function refreshNotificationSchedule() {
-  const permissions = await Notifications.getPermissionsAsync();
+	const permissions = await Notifications.getPermissionsAsync();
 
-  if (permissions.status !== "granted") {
-    console.log(`Notification schedule skipped: permission is ${permissions.status}`)
+	if (permissions.status !== "granted") {
+		console.log(
+			`Notification schedule skipped: permission is ${permissions.status}`,
+		);
 
-    return [];
-  }
+		return [];
+	}
 
-  const events = await getEconomicCalendar();
-  const settings = await getNotificationSettings();
-  const newsWindows = createNewsWindows(events);
+	const [events, settings] = await Promise.all([
+		getEconomicCalendar(),
+		getNotificationSettings(),
+	]);
 
-  const scheduled = await rebuildWeeklyNotificationSchedule(
-    newsWindows,
-    settings,
-  );
+	const newsWindows = createNewsWindows(events);
 
-  console.log(
-    `Notification schedule refreshed: ${scheduled.length} notifications`,
-  );
+	const scheduled = await rebuildWeeklyNotificationSchedule(
+		newsWindows,
+		settings,
+	);
 
-  return scheduled;
+	console.log(
+		`Notification schedule refreshed: ${scheduled.length} notifications`,
+	);
+
+	return scheduled;
 }
