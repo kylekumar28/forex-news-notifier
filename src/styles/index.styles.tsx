@@ -155,18 +155,18 @@ export const styles = StyleSheet.create({
     color: '#fff',
   },
 
-  emptyToday: {
+  emptyState: {
     paddingVertical: 24,
     paddingHorizontal: 4
   },
 
-  emptyTodayTitle: {
+  emptyStateTitle: {
     color: '#aaa',
     fontSize: 15,
     fontWeight: '600',
   },
 
-  emptyTodayText: {
+  emptyStateText: {
     color: '#666',
     fontSize: 13,
     marginTop: 4,

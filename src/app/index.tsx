@@ -22,7 +22,6 @@ export default function HomeScreen() {
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [calendarView, setCalendarView] = useState<'today' | 'week'>('today');
   const [selectedCurrencies, setSelectedCurrencies] = useState<Currency[]>(['USD']);
   const [currencyFilterOpen, setCurrencyFilterOpen] = useState(false);
 
@@ -59,19 +58,6 @@ export default function HomeScreen() {
   const filteredEvents = events.filter((event) => selectedCurrencies.includes(event.country as Currency));
 
   const sections = groupEventsByDay(filteredEvents);
-
-  const todayEvents = filteredEvents.filter((event) => {
-    const eventDate = new Date(event.date);
-    const today = new Date();
-
-    return (
-      eventDate.getFullYear() === today.getFullYear() && eventDate.getMonth() === today.getMonth() && eventDate.getDate() === today.getDate()
-    )
-  });
-
-  const todaySections = groupEventsByDay(todayEvents);
-
-  const visibleSections = calendarView === 'today' ? todaySections : sections;
 
   const newsWindow = createNewsWindows(filteredEvents);
 
@@ -161,19 +147,9 @@ export default function HomeScreen() {
       </View>
 
       <Text style={styles.subheading}>
-        {calendarView === 'today' ? `${todayEvents.length} ${todayEvents.length === 1 ? 'event' : 'events'} today` : `${filteredEvents.length} ${filteredEvents.length === 1 ? 'event' : 'events'} this week`}
+        {filteredEvents.length}{' '}
+        {filteredEvents.length === 1 ? 'event' : 'events'} this week
       </Text>
-
-      {/* Selector */}
-      <View style={styles.viewToggle}>
-        <Pressable style={[styles.viewToggleButton, calendarView === 'today' && styles.viewToggleButtonActive]} onPress={() => setCalendarView('today')}>
-          <Text style={[styles.viewToggleText, calendarView === 'today' && styles.viewToggleTextActive]}>Today</Text>
-        </Pressable>
-
-        <Pressable style={[styles.viewToggleButton, calendarView === 'week' && styles.viewToggleButtonActive]} onPress={() => setCalendarView('week')}>
-          <Text style={[styles.viewToggleText, calendarView === 'week' && styles.viewToggleTextActive]}>Week</Text>
-        </Pressable>
-      </View>
 
       {/* Currency Toggle UI */}
       <View style={styles.filterHeader}>
@@ -205,7 +181,7 @@ export default function HomeScreen() {
       <NextNewsCard newsWindow={nextNews} />
 
       <SectionList
-        sections={visibleSections}
+        sections={sections}
         keyExtractor={(item) => `${item.country}-${item.title}-${item.date}`}
         contentContainerStyle={styles.list}
         stickySectionHeadersEnabled={false}
@@ -234,13 +210,13 @@ export default function HomeScreen() {
           </View>
         )}
         ListFooterComponent={<AppVersion style={styles.versionText} />}
-        ListEmptyComponent={calendarView === 'today' ? (
-          <View style={styles.emptyToday}>
-            <Text style={styles.emptyTodayTitle}>No high-impact news today</Text>
+        ListEmptyComponent={
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyStateTitle}>No high-impact news this week</Text>
 
-            <Text style={styles.emptyTodayText}>There are no scheduled high-impact events today.</Text>
+            <Text style={styles.emptyStateText}>No events match your selected currencies</Text>
           </View>
-        ) : null}
+        }
       />
     </SafeAreaView>
   );
