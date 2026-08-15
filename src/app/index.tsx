@@ -7,8 +7,7 @@ import {
 } from "@/services/homeCalendarSettings";
 import { CURRENCIES, type Currency } from "@/services/notificationSettings";
 import { groupEventsByDay } from "@/utils/economicCalendar";
-import { getNextNewsWindow } from "@/utils/newsWindow";
-import { createNewsWindows } from "@/utils/newsWindows";
+import { createNewsWindows, getNextNewsWindow } from "@/utils/newsWindows";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import {
@@ -24,7 +23,7 @@ import {
 	getEconomicCalendar,
 	getEconomicCalendarUpdatedAt,
 } from "../services/economicCalendar";
-import { styles } from "../styles/index.styles";
+import { styles } from "../styles/home.styles";
 
 export default function HomeScreen() {
 	const [events, setEvents] = useState<EconomicEvent[]>([]);
@@ -75,9 +74,9 @@ export default function HomeScreen() {
 
 	const sections = groupEventsByDay(filteredEvents);
 
-	const newsWindow = createNewsWindows(filteredEvents);
+	const newsWindows = createNewsWindows(filteredEvents);
 
-	const nextNews = getNextNewsWindow(newsWindow);
+	const nextNews = getNextNewsWindow(newsWindows);
 
 	const isPastEvent = (dateString: string) => {
 		return new Date(dateString).getTime() < Date.now();
