@@ -1,3 +1,4 @@
+/** biome-ignore-all assist/source/organizeImports: <bug> */
 import { AppVersion } from "@/components/AppVersion";
 import { NextNewsCard } from "@/components/NextNewsCard";
 import {
@@ -41,7 +42,6 @@ export default function HomeScreen() {
 				setLoading(true);
 				setError(null);
 
-				// const data = await getEconomicCalendar();
 				const [data, calendarUpdatedAt, savedCurrencies] = await Promise.all([
 					getEconomicCalendar(),
 					getEconomicCalendarUpdatedAt(),
@@ -236,10 +236,8 @@ export default function HomeScreen() {
 				renderSectionHeader={({ section }) => (
 					<Text style={styles.dayHeading}>{section.title}</Text>
 				)}
-				renderItem={({ item, index, section }) => {
-					const isFirstEvent = section === sections[0] && index === 0;
-
-					const past = isFirstEvent ? false : isPastEvent(item.date);
+				renderItem={({ item }) => {
+					const past = isPastEvent(item.date);
 
 					return (
 						<View style={[styles.card, past && styles.cardPast]}>

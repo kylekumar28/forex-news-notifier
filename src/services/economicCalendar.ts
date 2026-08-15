@@ -6,6 +6,7 @@ import { database } from './firebase';
 //   'https://nfs.faireconomy.media/ff_calendar_thisweek.json?version=cfd9a298b1227ac550d26e47b069b8a4';
 
 const CACHE_KEY = 'economic_calendar';
+const UPDATED_AT_CACHE_KEY = 'economic_calendar_updated_at';
 
 export type EconomicEvent = {
   title: string;
@@ -55,12 +56,26 @@ export async function getEconomicCalendarUpdatedAt(): Promise<string | null> {
     const snapshot = await get(ref(database, 'economicCalendar/updatedAt'))
 
     if (!snapshot.exists()) {
-      return null;
+      const cachedUpdatedAt = AsyncStorage.getItem(UPDATED_AT_CACHE_KEY);
+
+      return cachedUpdatedAt;
     }
 
-    return String(snapshot.val());
+    const updatedAt = String(snapshot.val());
+
+    await AsyncStorage.setItem(UPDATED_AT_CACHE_KEY, updatedAt);
+
+    return updatedAt;
   } catch (error) {
-    console.error('Failed to get calendar updated time:', error);
+    console.error('Failed to get calendar updated time from Firebase', error);
+
+    const cachedUpdatedAt = await AsyncStorage.getItem(UPDATED_AT_CACHE_KEY);
+
+    if (cachedUpdatedAt) {
+      console.log('Using cached updated time fallback');
+
+      return cachedUpdatedAt;
+    }
 
     return null;
   }
