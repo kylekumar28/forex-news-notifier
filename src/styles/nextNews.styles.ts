@@ -74,9 +74,21 @@ export const styles = StyleSheet.create({
     fontWeight: '700',
   },
 
-  clearText: {
-    color: '#888',
-    fontSize: 13,
-    marginTop: 4,
-  },
+clearCard: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  backgroundColor: '#1c1c1e',
+  borderRadius: 12,
+  paddingHorizontal: 14,
+  paddingVertical: 12,
+  marginTop: 12,
+  marginBottom: 8,
+  gap: 8,
+},
+
+clearText: {
+  color: '#999',
+  fontSize: 13,
+  fontWeight: '600',
+},
 });

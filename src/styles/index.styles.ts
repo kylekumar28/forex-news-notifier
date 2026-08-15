@@ -126,34 +126,6 @@ export const styles = StyleSheet.create({
     marginTop: 24,
     marginBottom: 12,
   },
-  viewToggle: {
-    flexDirection: 'row',
-    backgroundColor: '#1c1c1e',
-    borderRadius: 10,
-    padding: 3,
-    marginBottom: 10,
-  },
-
-  viewToggleButton: {
-    flex: 1,
-    paddingVertical: 8,
-    alignItems: 'center',
-    borderRadius: 8,
-  },
-
-  viewToggleButtonActive: {
-    backgroundColor: '#333',
-  },
-
-  viewToggleText: {
-    color: '#777',
-    fontSize: 13,
-    fontWeight: '600',
-  },
-
-  viewToggleTextActive: {
-    color: '#fff',
-  },
 
   emptyState: {
     paddingVertical: 24,
@@ -201,12 +173,6 @@ export const styles = StyleSheet.create({
     fontWeight: '700',
   },
 
-  filterChevron: {
-    color: '#777',
-    fontSize: 9,
-    marginLeft: 7,
-  },
-
   currencyFilter: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -237,13 +203,6 @@ export const styles = StyleSheet.create({
 
   currencyFilterTextSelected: {
     color: '#111',
-  },
-
-  staleWarning: {
-    color: '#d6a84b',
-    fontSize: 12,
-    marginTop: 2,
-    marginBottom: 10,
   },
 
   updatedAtRow: {

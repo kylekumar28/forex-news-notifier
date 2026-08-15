@@ -1,5 +1,6 @@
 import { styles } from "@/styles/nextNews.styles";
 import { NewsWindow } from "@/utils/newsWindows";
+import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
 
@@ -20,14 +21,9 @@ export function NextNewsCard({ newsWindow }: Props) {
 
   if (!newsWindow) {
     return (
-      <View style={styles.card}>
-        <Text style={styles.label}>
-          NEXT HIGH-IMPACT NEWS
-        </Text>
-
-        <Text style={styles.clearTitle}>No upcoming high-impact news</Text>
-
-        <Text style={styles.clearText}>No more events are scheduled this week.</Text>
+      <View style={styles.clearCard}>
+        <Ionicons name='checkmark-circle-outline' size={18} color='#777' />
+        <Text style={styles.clearText}>No more high-impact news this week</Text>
       </View>
     )
   }
