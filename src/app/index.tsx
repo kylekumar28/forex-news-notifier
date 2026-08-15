@@ -1,6 +1,9 @@
 /** biome-ignore-all assist/source/organizeImports: <Executive decision> */
 import { AppVersion } from '@/components/AppVersion';
+import { NextNewsCard } from '@/components/NextNewsCard';
 import { groupEventsByDay } from '@/utils/economicCalendar';
+import { getNextNewsWindow } from '@/utils/newsWindow';
+import { createNewsWindows } from '@/utils/newsWindows';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, SectionList, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -48,6 +51,10 @@ export default function HomeScreen() {
 
   const sections = groupEventsByDay(events);
 
+  const newsWindow = createNewsWindows(events);
+
+  const nextNews = getNextNewsWindow(newsWindow);
+
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
 
@@ -83,6 +90,8 @@ export default function HomeScreen() {
       </View>
 
       <Text style={styles.subheading}>{events.length} events this week</Text>
+
+      <NextNewsCard newsWindow={nextNews} />
 
       <SectionList
         sections={sections}
