@@ -171,4 +171,71 @@ emptyTodayText: {
   fontSize: 13,
   marginTop: 4,
 },
+
+filterHeader: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  marginTop: 8,
+  marginBottom: 10,
+},
+
+filterLabel: {
+  color: '#888',
+  fontSize: 12,
+  fontWeight: '600',
+},
+
+filterButton: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  backgroundColor: '#1c1c1e',
+  paddingHorizontal: 12,
+  paddingVertical: 7,
+  borderRadius: 8,
+},
+
+filterButtonText: {
+  color: '#fff',
+  fontSize: 12,
+  fontWeight: '700',
+},
+
+filterChevron: {
+  color: '#777',
+  fontSize: 9,
+  marginLeft: 7,
+},
+
+currencyFilter: {
+  flexDirection: 'row',
+  flexWrap: 'wrap',
+  gap: 8,
+  backgroundColor: '#1c1c1e',
+  borderRadius: 12,
+  padding: 10,
+  marginBottom: 10,
+},
+
+currencyFilterButton: {
+  width: '31%',
+  paddingVertical: 9,
+  borderRadius: 8,
+  alignItems: 'center',
+  backgroundColor: '#29292b',
+},
+
+currencyFilterButtonSelected: {
+  backgroundColor: '#fff',
+},
+
+currencyFilterText: {
+  color: '#888',
+  fontSize: 12,
+  fontWeight: '700',
+},
+
+currencyFilterTextSelected: {
+  color: '#111',
+},
 });
