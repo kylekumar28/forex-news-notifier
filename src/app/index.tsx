@@ -113,6 +113,20 @@ export default function HomeScreen() {
     });
   };
 
+  const isCalendarStale = (updatedAt: string | null) => {
+    if (!updatedAt) return false;
+
+    const updatedTime = new Date(updatedAt).getTime();
+
+    if (Number.isNaN(updatedTime)) return false;
+
+    const STALE_AFTER_MS = 3 * 60 * 60 * 1000;
+
+    return Date.now() - updatedTime > STALE_AFTER_MS;
+  }
+
+  const calendarStale = isCalendarStale(updatedAt);
+
   if (loading) {
     return (
       <SafeAreaView style={styles.center}>
@@ -135,7 +149,15 @@ export default function HomeScreen() {
       <View style={styles.headingRow}>
         <Text style={styles.heading}>High Impact News</Text>
 
-        {updatedAt && (<Text style={styles.updatedAt}>Updated {formatTime(updatedAt)}</Text>)}
+        {updatedAt && (
+          <View style={styles.updatedAtRow}>
+            {calendarStale && (
+              <Ionicons name='warning-outline' size={12} color='#d6a84b' />
+            )}
+
+            <Text style={[styles.updatedAt, calendarStale && styles.updatedAtStale]}>Updated {formatTime(updatedAt)}</Text>
+          </View>
+        )}
       </View>
 
       <Text style={styles.subheading}>

@@ -127,115 +127,132 @@ export const styles = StyleSheet.create({
     marginBottom: 12,
   },
   viewToggle: {
-  flexDirection: 'row',
-  backgroundColor: '#1c1c1e',
-  borderRadius: 10,
-  padding: 3,
-  marginBottom: 10,
-},
+    flexDirection: 'row',
+    backgroundColor: '#1c1c1e',
+    borderRadius: 10,
+    padding: 3,
+    marginBottom: 10,
+  },
 
-viewToggleButton: {
-  flex: 1,
-  paddingVertical: 8,
-  alignItems: 'center',
-  borderRadius: 8,
-},
+  viewToggleButton: {
+    flex: 1,
+    paddingVertical: 8,
+    alignItems: 'center',
+    borderRadius: 8,
+  },
 
-viewToggleButtonActive: {
-  backgroundColor: '#333',
-},
+  viewToggleButtonActive: {
+    backgroundColor: '#333',
+  },
 
-viewToggleText: {
-  color: '#777',
-  fontSize: 13,
-  fontWeight: '600',
-},
+  viewToggleText: {
+    color: '#777',
+    fontSize: 13,
+    fontWeight: '600',
+  },
 
-viewToggleTextActive: {
-  color: '#fff',
-},
+  viewToggleTextActive: {
+    color: '#fff',
+  },
 
-emptyToday: {
-  paddingVertical: 24,
-  paddingHorizontal: 4
-},
+  emptyToday: {
+    paddingVertical: 24,
+    paddingHorizontal: 4
+  },
 
-emptyTodayTitle: {
-  color: '#aaa',
-  fontSize: 15,
-  fontWeight: '600',
-},
+  emptyTodayTitle: {
+    color: '#aaa',
+    fontSize: 15,
+    fontWeight: '600',
+  },
 
-emptyTodayText: {
-  color: '#666',
-  fontSize: 13,
-  marginTop: 4,
-},
+  emptyTodayText: {
+    color: '#666',
+    fontSize: 13,
+    marginTop: 4,
+  },
 
-filterHeader: {
-  flexDirection: 'row',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  marginTop: 8,
-  marginBottom: 10,
-},
+  filterHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 8,
+    marginBottom: 10,
+  },
 
-filterLabel: {
-  color: '#888',
-  fontSize: 12,
-  fontWeight: '600',
-},
+  filterLabel: {
+    color: '#888',
+    fontSize: 12,
+    fontWeight: '600',
+  },
 
-filterButton: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  backgroundColor: '#1c1c1e',
-  paddingHorizontal: 12,
-  paddingVertical: 7,
-  borderRadius: 8,
-},
+  filterButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1c1c1e',
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 8,
+  },
 
-filterButtonText: {
-  color: '#fff',
-  fontSize: 12,
-  fontWeight: '700',
-},
+  filterButtonText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '700',
+  },
 
-filterChevron: {
-  color: '#777',
-  fontSize: 9,
-  marginLeft: 7,
-},
+  filterChevron: {
+    color: '#777',
+    fontSize: 9,
+    marginLeft: 7,
+  },
 
-currencyFilter: {
-  flexDirection: 'row',
-  flexWrap: 'wrap',
-  gap: 8,
-  backgroundColor: '#1c1c1e',
-  borderRadius: 12,
-  padding: 10,
-  marginBottom: 10,
-},
+  currencyFilter: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    backgroundColor: '#1c1c1e',
+    borderRadius: 12,
+    padding: 10,
+    marginBottom: 10,
+  },
 
-currencyFilterButton: {
-  width: '31%',
-  paddingVertical: 9,
-  borderRadius: 8,
-  alignItems: 'center',
-  backgroundColor: '#29292b',
-},
+  currencyFilterButton: {
+    width: '31%',
+    paddingVertical: 9,
+    borderRadius: 8,
+    alignItems: 'center',
+    backgroundColor: '#29292b',
+  },
 
-currencyFilterButtonSelected: {
-  backgroundColor: '#fff',
-},
+  currencyFilterButtonSelected: {
+    backgroundColor: '#fff',
+  },
 
-currencyFilterText: {
-  color: '#888',
-  fontSize: 12,
-  fontWeight: '700',
-},
+  currencyFilterText: {
+    color: '#888',
+    fontSize: 12,
+    fontWeight: '700',
+  },
 
-currencyFilterTextSelected: {
-  color: '#111',
-},
+  currencyFilterTextSelected: {
+    color: '#111',
+  },
+
+  staleWarning: {
+    color: '#d6a84b',
+    fontSize: 12,
+    marginTop: 2,
+    marginBottom: 10,
+  },
+
+  updatedAtRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+
+  updatedAtStale: {
+    color: '#d6a84b',
+  },
 });
