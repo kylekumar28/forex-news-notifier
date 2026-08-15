@@ -126,4 +126,49 @@ export const styles = StyleSheet.create({
     marginTop: 24,
     marginBottom: 12,
   },
+  viewToggle: {
+  flexDirection: 'row',
+  backgroundColor: '#1c1c1e',
+  borderRadius: 10,
+  padding: 3,
+  marginBottom: 10,
+},
+
+viewToggleButton: {
+  flex: 1,
+  paddingVertical: 8,
+  alignItems: 'center',
+  borderRadius: 8,
+},
+
+viewToggleButtonActive: {
+  backgroundColor: '#333',
+},
+
+viewToggleText: {
+  color: '#777',
+  fontSize: 13,
+  fontWeight: '600',
+},
+
+viewToggleTextActive: {
+  color: '#fff',
+},
+
+emptyToday: {
+  paddingVertical: 24,
+  paddingHorizontal: 4
+},
+
+emptyTodayTitle: {
+  color: '#aaa',
+  fontSize: 15,
+  fontWeight: '600',
+},
+
+emptyTodayText: {
+  color: '#666',
+  fontSize: 13,
+  marginTop: 4,
+},
 });

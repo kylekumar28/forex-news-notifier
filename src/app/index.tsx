@@ -5,7 +5,7 @@ import { groupEventsByDay } from '@/utils/economicCalendar';
 import { getNextNewsWindow } from '@/utils/newsWindow';
 import { createNewsWindows } from '@/utils/newsWindows';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, SectionList, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, SectionList, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   type EconomicEvent,
@@ -19,6 +19,7 @@ export default function HomeScreen() {
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [calendarView, setCalendarView] = useState<'today' | 'week'>('today');
 
   useEffect(() => {
     const loadEvents = async () => {
@@ -50,6 +51,19 @@ export default function HomeScreen() {
   }, []);
 
   const sections = groupEventsByDay(events);
+
+  const todayEvents = events.filter((event) => {
+    const eventDate = new Date(event.date);
+    const today = new Date();
+
+    return (
+      eventDate.getFullYear() === today.getFullYear() && eventDate.getMonth() === today.getMonth() && eventDate.getDate() === today.getDate()
+    )
+  });
+
+  const todaySections = groupEventsByDay(todayEvents);
+
+  const visibleSections = calendarView === 'today' ? todaySections : sections;
 
   const newsWindow = createNewsWindows(events);
 
@@ -89,12 +103,25 @@ export default function HomeScreen() {
         {updatedAt && (<Text style={styles.updatedAt}>Updated {formatTime(updatedAt)}</Text>)}
       </View>
 
-      <Text style={styles.subheading}>{events.length} events this week</Text>
+      <Text style={styles.subheading}>
+        {calendarView === 'today' ? `${todayEvents.length} events today` : `${events.length} events this week`}
+      </Text>
+
+      {/* Selector */}
+      <View style={styles.viewToggle}>
+        <Pressable style={[styles.viewToggleButton, calendarView === 'today' && styles.viewToggleButtonActive]} onPress={() => setCalendarView('today')}>
+          <Text style={[styles.viewToggleText, calendarView === 'today' && styles.viewToggleTextActive]}>Today</Text>
+        </Pressable>
+
+        <Pressable style={[styles.viewToggleButton, calendarView === 'week' && styles.viewToggleButtonActive]} onPress={() => setCalendarView('week')}>
+          <Text style={[styles.viewToggleText, calendarView === 'week' && styles.viewToggleTextActive]}>Week</Text>
+        </Pressable>
+      </View>
 
       <NextNewsCard newsWindow={nextNews} />
 
       <SectionList
-        sections={sections}
+        sections={visibleSections}
         keyExtractor={(item) => `${item.country}-${item.title}-${item.date}`}
         contentContainerStyle={styles.list}
         stickySectionHeadersEnabled={false}
@@ -123,6 +150,13 @@ export default function HomeScreen() {
           </View>
         )}
         ListFooterComponent={<AppVersion style={styles.versionText} />}
+        ListEmptyComponent={calendarView === 'today' ? (
+          <View style={styles.emptyToday}>
+            <Text style={styles.emptyTodayTitle}>No high-impact news today</Text>
+
+            <Text style={styles.emptyTodayText}>There are no scheduled high-impact events today.</Text>
+          </View>
+        ) : null}
       />
     </SafeAreaView>
   );
