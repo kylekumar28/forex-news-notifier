@@ -18,7 +18,7 @@
   "submit": {
     "android-beta": {
       "android": {
-        "track": "beta",
+        "track": "alpha",
         "releaseStatus": "completed"
       }
     },
