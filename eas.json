@@ -16,6 +16,17 @@
     }
   },
   "submit": {
-    "production": {}
+    "android-beta": {
+      "android": {
+        "track": "beta",
+        "releaseStatus": "completed"
+      }
+    },
+    "production": {
+      "android": {
+        "track": "production",
+        "releaseStatus": "completed"
+      }
+    }
   }
 }
