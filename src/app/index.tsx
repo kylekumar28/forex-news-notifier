@@ -1,297 +1,258 @@
 /** biome-ignore-all assist/source/organizeImports: <bug> */
-import { AppVersion } from "@/components/AppVersion";
-import { NextNewsCard } from "@/components/NextNewsCard";
+import { AppVersion } from '@/components/AppVersion';
 import {
-	getHomeCurrencies,
-	saveHomeCurrencies,
-} from "@/services/homeCalendarSettings";
-import { CURRENCIES, type Currency } from "@/services/notificationSettings";
-import { groupEventsByDay } from "@/utils/economicCalendar";
-import { createNewsWindows, getNextNewsWindow } from "@/utils/newsWindows";
-import { Ionicons } from "@expo/vector-icons";
-import { useEffect, useState } from "react";
+  getNotificationSettings,
+  type Currency,
+} from '@/services/notificationSettings';
+import { groupEventsByDay } from '@/utils/economicCalendar';
+import { Ionicons } from '@expo/vector-icons';
+import { useCallback, useEffect, useState } from 'react';
 import {
-	ActivityIndicator,
-	Pressable,
-	SectionList,
-	Text,
-	View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+  ActivityIndicator,
+  Pressable,
+  SectionList,
+  Text,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import {
-	type EconomicEvent,
-	getEconomicCalendar,
-	getEconomicCalendarUpdatedAt,
-} from "../services/economicCalendar";
-import { styles } from "../styles/home.styles";
+  getEconomicCalendar,
+  getEconomicCalendarUpdatedAt,
+  type EconomicEvent,
+} from '../services/economicCalendar';
+import { styles } from '../styles/home.styles';
 
 export default function HomeScreen() {
-	const [events, setEvents] = useState<EconomicEvent[]>([]);
-	const [updatedAt, setUpdatedAt] = useState<string | null>(null);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
-	const [selectedCurrencies, setSelectedCurrencies] = useState<Currency[]>([
-		"USD",
-	]);
-	const [currencyFilterOpen, setCurrencyFilterOpen] = useState(false);
+  const [events, setEvents] = useState<EconomicEvent[]>([]);
+  const [updatedAt, setUpdatedAt] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [alertCurrencies, setAlertCurrencies] = useState<Currency[]>([]);
+  const [newsFilter, setNewsFilter] = useState<'alerts' | 'all'>('alerts');
 
-	useEffect(() => {
-		const loadEvents = async () => {
-			try {
-				setLoading(true);
-				setError(null);
+  useEffect(() => {
+    const loadEvents = async () => {
+      try {
+        setLoading(true);
+        setError(null);
 
-				const [data, calendarUpdatedAt, savedCurrencies] = await Promise.all([
-					getEconomicCalendar(),
-					getEconomicCalendarUpdatedAt(),
-					getHomeCurrencies(),
-				]);
+        const [data, calendarUpdatedAt] = await Promise.all([
+          getEconomicCalendar(),
+          getEconomicCalendarUpdatedAt(),
+        ]);
 
-				const highImpactEvents = data.filter(
-					(event) => event.impact === "High",
-				);
+        const highImpactEvents = data.filter(
+          (event) => event.impact === 'High',
+        );
 
-				setUpdatedAt(calendarUpdatedAt);
-				setEvents(highImpactEvents);
-				setSelectedCurrencies(savedCurrencies);
-			} catch (error) {
-				console.error(error);
+        setUpdatedAt(calendarUpdatedAt);
+        setEvents(highImpactEvents);
+      } catch (error) {
+        console.error(error);
 
-				setError(
-					error instanceof Error ? error.message : "Something went wrong",
-				);
-			} finally {
-				setLoading(false);
-			}
-		};
+        setError(
+          error instanceof Error ? error.message : 'Something went wrong',
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
 
-		loadEvents();
-	}, []);
+    loadEvents();
+  }, []);
 
-	const filteredEvents = events.filter((event) =>
-		selectedCurrencies.includes(event.country as Currency),
-	);
+  useEffect(
+    useCallback(() => {
+      async function loadAlertCurrencies() {
+        const settings = await getNotificationSettings();
 
-	const sections = groupEventsByDay(filteredEvents);
+        setAlertCurrencies(settings.selectedCurrencies);
+      }
 
-	const newsWindows = createNewsWindows(filteredEvents);
+      loadAlertCurrencies();
+    }, []),
+  );
 
-	const nextNews = getNextNewsWindow(newsWindows);
+  const filteredEvents =
+    newsFilter === 'all'
+      ? events
+      : events.filter((event) =>
+          alertCurrencies.includes(event.country as Currency),
+        );
 
-	const isPastEvent = (dateString: string) => {
-		return new Date(dateString).getTime() < Date.now();
-	};
+  const sections = groupEventsByDay(filteredEvents);
 
-	const toggleCurrency = async (currency: Currency) => {
-		let updatedCurrencies: Currency[];
+  const isPastEvent = (dateString: string) => {
+    return new Date(dateString).getTime() < Date.now();
+  };
 
-		if (selectedCurrencies.includes(currency)) {
-			updatedCurrencies = selectedCurrencies.filter(
-				(item) => item !== currency,
-			);
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
 
-			// Never allow zero currencies
-			if (updatedCurrencies.length === 0) {
-				return;
-			}
-		} else {
-			updatedCurrencies = [...selectedCurrencies, currency];
-		}
+    return date.toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
 
-		setSelectedCurrencies(updatedCurrencies);
+  const isCalendarStale = (updatedAt: string | null) => {
+    if (!updatedAt) return false;
 
-		await saveHomeCurrencies(updatedCurrencies);
-	};
+    const updatedTime = new Date(updatedAt).getTime();
 
-	const getCurrencyFilterLabel = () => {
-		if (selectedCurrencies.length <= 3) {
-			return selectedCurrencies.join(" • ");
-		}
+    if (Number.isNaN(updatedTime)) return false;
 
-		return `${selectedCurrencies.length} selected`;
-	};
+    const STALE_AFTER_MS = 3 * 60 * 60 * 1000;
 
-	const formatTime = (dateString: string) => {
-		const date = new Date(dateString);
+    return Date.now() - updatedTime > STALE_AFTER_MS;
+  };
 
-		return date.toLocaleTimeString([], {
-			hour: "2-digit",
-			minute: "2-digit",
-		});
-	};
+  const calendarStale = isCalendarStale(updatedAt);
 
-	const isCalendarStale = (updatedAt: string | null) => {
-		if (!updatedAt) return false;
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.center}>
+        <ActivityIndicator size='large' />
+        <Text style={styles.loadingText}>Loading economic calendar...</Text>
+      </SafeAreaView>
+    );
+  }
 
-		const updatedTime = new Date(updatedAt).getTime();
+  if (error) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Text style={styles.error}>Error: {error}</Text>
+      </SafeAreaView>
+    );
+  }
 
-		if (Number.isNaN(updatedTime)) return false;
+  return (
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+      <View style={styles.headingRow}>
+        <Text style={styles.heading}>High Impact News</Text>
 
-		const STALE_AFTER_MS = 3 * 60 * 60 * 1000;
+        {updatedAt && (
+          <View style={styles.updatedAtRow}>
+            {calendarStale && (
+              <Ionicons name='warning-outline' size={12} color='#d6a84b' />
+            )}
 
-		return Date.now() - updatedTime > STALE_AFTER_MS;
-	};
+            <Text
+              style={[styles.updatedAt, calendarStale && styles.updatedAtStale]}
+            >
+              Updated {formatTime(updatedAt)}
+            </Text>
+          </View>
+        )}
+      </View>
 
-	const calendarStale = isCalendarStale(updatedAt);
+      <Text style={styles.subheading}>
+        {filteredEvents.length}{' '}
+        {filteredEvents.length === 1 ? 'event' : 'events'} this week
+      </Text>
 
-	if (loading) {
-		return (
-			<SafeAreaView style={styles.center}>
-				<ActivityIndicator size="large" />
-				<Text style={styles.loadingText}>Loading economic calendar...</Text>
-			</SafeAreaView>
-		);
-	}
+      {/* News filter */}
+      <View style={styles.newsFilter}>
+        <Pressable
+          style={[
+            styles.newsFilterButton,
+            newsFilter === 'alerts' && styles.newsFilterButtonActive,
+          ]}
+          onPress={() => setNewsFilter('alerts')}
+        >
+          <Text
+            style={[
+              styles.newsFilterText,
+              newsFilter === 'alerts' && styles.newsFilterTextActive,
+            ]}
+          >
+            My Alerts
+          </Text>
+        </Pressable>
 
-	if (error) {
-		return (
-			<SafeAreaView style={styles.container}>
-				<Text style={styles.error}>Error: {error}</Text>
-			</SafeAreaView>
-		);
-	}
+        <Pressable
+          style={[
+            styles.newsFilterButton,
+            newsFilter === 'all' && styles.newsFilterButtonActive,
+          ]}
+          onPress={() => setNewsFilter('all')}
+        >
+          <Text
+            style={[
+              styles.newsFilterText,
+              newsFilter === 'all' && styles.newsFilterTextActive,
+            ]}
+          >
+            All News
+          </Text>
+        </Pressable>
+      </View>
 
-	return (
-		<SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
-			<View style={styles.headingRow}>
-				<Text style={styles.heading}>High Impact News</Text>
+      <SectionList
+        sections={sections}
+        keyExtractor={(item) => `${item.country}-${item.title}-${item.date}`}
+        contentContainerStyle={styles.list}
+        stickySectionHeadersEnabled={false}
+        renderSectionHeader={({ section }) => (
+          <Text style={styles.dayHeading}>{section.title}</Text>
+        )}
+        renderItem={({ item }) => {
+          const past = isPastEvent(item.date);
 
-				{updatedAt && (
-					<View style={styles.updatedAtRow}>
-						{calendarStale && (
-							<Ionicons name="warning-outline" size={12} color="#d6a84b" />
-						)}
+          return (
+            <View style={[styles.card, past && styles.cardPast]}>
+              <View style={styles.cardHeader}>
+                <View
+                  style={[
+                    styles.currencyBadge,
+                    past && styles.currencyBadgePast,
+                  ]}
+                >
+                  <Text style={[styles.currency, past && styles.textPast]}>
+                    {item.country}
+                  </Text>
+                </View>
+                <Text style={[styles.time, past && styles.textPast]}>
+                  {formatTime(item.date)}
+                </Text>
 
-						<Text
-							style={[styles.updatedAt, calendarStale && styles.updatedAtStale]}
-						>
-							Updated {formatTime(updatedAt)}
-						</Text>
-					</View>
-				)}
-			</View>
+                <View
+                  style={[styles.impactBadge, past && styles.impactBadgePast]}
+                >
+                  <Text style={[styles.impact, past && styles.impactPast]}>
+                    HIGH
+                  </Text>
+                </View>
+              </View>
 
-			<Text style={styles.subheading}>
-				{filteredEvents.length}{" "}
-				{filteredEvents.length === 1 ? "event" : "events"} this week
-			</Text>
+              <Text style={[styles.title, past && styles.titlePast]}>
+                {item.title}
+              </Text>
 
-			{/* Currency Toggle UI */}
-			<View style={styles.filterHeader}>
-				<Text style={styles.filterLabel}>News currencies</Text>
+              <View style={styles.dataRow}>
+                <Text style={[styles.data, past && styles.textPast]}>
+                  Forecast: {item.forecast || '-'}
+                </Text>
+                <Text style={[styles.data, past && styles.textPast]}>
+                  Previous: {item.previous || '-'}
+                </Text>
+              </View>
+            </View>
+          );
+        }}
+        ListFooterComponent={<AppVersion style={styles.versionText} />}
+        ListEmptyComponent={
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyStateTitle}>
+              No high-impact news this week
+            </Text>
 
-				<Pressable
-					style={styles.filterButton}
-					onPress={() => setCurrencyFilterOpen((current) => !current)}
-				>
-					<Text style={styles.filterButtonText}>
-						{getCurrencyFilterLabel()}
-					</Text>
-
-					<Ionicons
-						name={currencyFilterOpen ? "chevron-up" : "chevron-down"}
-						size={14}
-						color="#777"
-						style={{ marginLeft: 4 }}
-					/>
-				</Pressable>
-			</View>
-
-			{currencyFilterOpen && (
-				<View style={styles.currencyFilter}>
-					{CURRENCIES.map((currency) => {
-						const selected = selectedCurrencies.includes(currency);
-
-						return (
-							<Pressable
-								key={currency}
-								style={[
-									styles.currencyFilterButton,
-									selected && styles.currencyFilterButtonSelected,
-								]}
-								onPress={() => toggleCurrency(currency)}
-							>
-								<Text
-									style={[
-										styles.currencyFilterText,
-										selected && styles.currencyFilterTextSelected,
-									]}
-								>
-									{currency}
-								</Text>
-							</Pressable>
-						);
-					})}
-				</View>
-			)}
-
-			<NextNewsCard newsWindow={nextNews} />
-
-			<SectionList
-				sections={sections}
-				keyExtractor={(item) => `${item.country}-${item.title}-${item.date}`}
-				contentContainerStyle={styles.list}
-				stickySectionHeadersEnabled={false}
-				renderSectionHeader={({ section }) => (
-					<Text style={styles.dayHeading}>{section.title}</Text>
-				)}
-				renderItem={({ item }) => {
-					const past = isPastEvent(item.date);
-
-					return (
-						<View style={[styles.card, past && styles.cardPast]}>
-							<View style={styles.cardHeader}>
-								<View
-									style={[
-										styles.currencyBadge,
-										past && styles.currencyBadgePast,
-									]}
-								>
-									<Text style={[styles.currency, past && styles.textPast]}>
-										{item.country}
-									</Text>
-								</View>
-								<Text style={[styles.time, past && styles.textPast]}>
-									{formatTime(item.date)}
-								</Text>
-
-								<View
-									style={[styles.impactBadge, past && styles.impactBadgePast]}
-								>
-									<Text style={[styles.impact, past && styles.impactPast]}>
-										HIGH
-									</Text>
-								</View>
-							</View>
-
-							<Text style={[styles.title, past && styles.titlePast]}>
-								{item.title}
-							</Text>
-
-							<View style={styles.dataRow}>
-								<Text style={[styles.data, past && styles.textPast]}>
-									Forecast: {item.forecast || "-"}
-								</Text>
-								<Text style={[styles.data, past && styles.textPast]}>
-									Previous: {item.previous || "-"}
-								</Text>
-							</View>
-						</View>
-					);
-				}}
-				ListFooterComponent={<AppVersion style={styles.versionText} />}
-				ListEmptyComponent={
-					<View style={styles.emptyState}>
-						<Text style={styles.emptyStateTitle}>
-							No high-impact news this week
-						</Text>
-
-						<Text style={styles.emptyStateText}>
-							No events match your selected currencies
-						</Text>
-					</View>
-				}
-			/>
-		</SafeAreaView>
-	);
+            <Text style={styles.emptyStateText}>
+              No events match your alert currencies
+            </Text>
+          </View>
+        }
+      />
+    </SafeAreaView>
+  );
 }
