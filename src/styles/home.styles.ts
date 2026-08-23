@@ -55,11 +55,6 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 6,
   },
-  topRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 10,
-  },
   currencyBadge: {
     backgroundColor: '#333',
     paddingHorizontal: 8,
@@ -94,10 +89,6 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  date: {
-    color: '#aaa',
-    marginTop: 6,
-  },
   dataRow: {
     flexDirection: 'row',
     gap: 18,
@@ -113,11 +104,6 @@ export const styles = StyleSheet.create({
   },
   error: {
     color: '#ff453a',
-  },
-  emptyText: {
-    color: '#888',
-    textAlign: 'center',
-    marginTop: 40,
   },
   versionText: {
     color: '#555',
