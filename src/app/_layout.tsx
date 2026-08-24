@@ -1,9 +1,9 @@
-import { Ionicons } from "@expo/vector-icons";
-import * as Notifications from "expo-notifications";
-import { Tabs } from "expo-router";
-import { useEffect } from "react";
+import { Ionicons } from '@expo/vector-icons';
+import * as Notifications from 'expo-notifications';
+import { Tabs } from 'expo-router';
+import { useEffect } from 'react';
 
-import { refreshNotificationSchedule } from "@/services/notificationManager";
+import { refreshNotificationSchedule } from '@/services/notificationManager';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -25,7 +25,7 @@ export default function TabsLayout() {
         );
       } catch (error) {
         console.error(
-          "Failed to refresh notification schedule on startup:",
+          'Failed to refresh notification schedule on startup:',
           error,
         );
       }
@@ -39,29 +39,29 @@ export default function TabsLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: "#1c1c1e",
-          borderTopColor: "#333",
+          backgroundColor: '#1c1c1e',
+          borderTopColor: '#333',
         },
-        tabBarActiveTintColor: "#fff",
-        tabBarInactiveTintColor: "#777",
+        tabBarActiveTintColor: '#fff',
+        tabBarInactiveTintColor: '#777',
       }}
     >
       <Tabs.Screen
-        name="index"
+        name='index'
         options={{
-          title: "Home",
+          title: 'Events',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home" size={size} color={color} />
+            <Ionicons name='calendar-outline' size={size} color={color} />
           ),
         }}
       />
 
       <Tabs.Screen
-        name="alerts"
+        name='alerts'
         options={{
-          title: "Alerts",
+          title: 'Alerts',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="notifications" size={size} color={color} />
+            <Ionicons name='notifications' size={size} color={color} />
           ),
         }}
       />
