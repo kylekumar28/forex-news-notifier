@@ -23,7 +23,7 @@
     },
     "android-beta": {
       "android": {
-        "track": "alpha",
+        "track": "internal",
         "releaseStatus": "completed"
       }
     },
