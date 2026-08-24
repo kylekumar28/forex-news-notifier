@@ -16,6 +16,11 @@
     }
   },
   "submit": {
+    "ios-beta": {
+      "ios": {
+        "groups": ["TradeFence Beta Testers"]
+      }
+    },
     "android-beta": {
       "android": {
         "track": "alpha",
