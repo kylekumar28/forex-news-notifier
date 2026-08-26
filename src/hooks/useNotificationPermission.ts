@@ -1,84 +1,97 @@
 /** biome-ignore-all assist/source/organizeImports: <bug> */
-import { refreshNotificationSchedule } from "@/services/notificationManager";
-import * as Notifications from "expo-notifications";
-import { useCallback, useEffect, useState } from "react";
-import { AppState, Linking } from "react-native";
+import { updateDiagnosticState } from '@/services/diagnostics';
+import { refreshNotificationSchedule } from '@/services/notificationManager';
+import * as Notifications from 'expo-notifications';
+import { useCallback, useEffect, useState } from 'react';
+import { AppState, Linking } from 'react-native';
 
 export type NotificationPermission =
-	| "loading"
-	| "granted"
-	| "denied"
-	| "undetermined";
+  | 'loading'
+  | 'granted'
+  | 'denied'
+  | 'undetermined';
 
 export function useNotificationPermission(
-	onScheduleRefreshed?: (count: number) => void,
+  onScheduleRefreshed?: (count: number) => void,
 ) {
-	const [permission, setPermission] =
-		useState<NotificationPermission>("loading");
+  const [permission, setPermission] =
+    useState<NotificationPermission>('loading');
 
-	const checkPermission = useCallback(async () => {
-		const result = await Notifications.getPermissionsAsync();
+  const updatePermission = useCallback(
+    async (status: Exclude<NotificationPermission, 'loading'>) => {
+      setPermission(status);
 
-		setPermission(result.status);
+      await updateDiagnosticState({
+        notificationPermission: status,
+      });
+    },
+    [],
+  );
 
-		return result.status;
-	}, []);
+  const checkPermission = useCallback(async () => {
+    const result = await Notifications.getPermissionsAsync();
 
-	const enableNotifications = useCallback(async () => {
-		const current = await Notifications.getPermissionsAsync();
+    await updatePermission(result.status);
 
-		if (current.status === "granted") {
-			setPermission("granted");
-			return;
-		}
+    return result.status;
+  }, [updatePermission]);
 
-		if (current.status === "denied") {
-			await Linking.openSettings();
-			return;
-		}
+  const enableNotifications = useCallback(async () => {
+    const current = await Notifications.getPermissionsAsync();
 
-		const requested = await Notifications.requestPermissionsAsync();
+    if (current.status === 'granted') {
+      await updatePermission('granted');
+      return;
+    }
 
-		if (requested.status === "granted") {
-			setPermission("granted");
+    if (current.status === 'denied') {
+      await updatePermission('denied');
+      await Linking.openSettings();
+      return;
+    }
 
-			const scheduled = await refreshNotificationSchedule();
+    const requested = await Notifications.requestPermissionsAsync();
 
-			onScheduleRefreshed?.(scheduled.length);
+    await updatePermission(requested.status);
 
-			return;
-		}
+    if (requested.status === 'granted') {
+      const scheduled = await refreshNotificationSchedule();
 
-		setPermission("denied");
-	}, [onScheduleRefreshed]);
+      onScheduleRefreshed?.(scheduled.length);
 
-	useEffect(() => {
-		checkPermission();
-	}, [checkPermission]);
+      return;
+    }
 
-	useEffect(() => {
-		const subscription = AppState.addEventListener("change", async (state) => {
-			if (state !== "active") {
-				return;
-			}
+    setPermission('denied');
+  }, [onScheduleRefreshed, updatePermission]);
 
-			const status = await checkPermission();
+  useEffect(() => {
+    checkPermission();
+  }, [checkPermission]);
 
-			if (status === "granted") {
-				const scheduled = await refreshNotificationSchedule();
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', async (state) => {
+      if (state !== 'active') {
+        return;
+      }
 
-				onScheduleRefreshed?.(scheduled.length);
-			}
-		});
+      const status = await checkPermission();
 
-		return () => {
-			subscription.remove();
-		};
-	}, [checkPermission, onScheduleRefreshed]);
+      if (status === 'granted') {
+        const scheduled = await refreshNotificationSchedule();
 
-	return {
-		permission,
-		enableNotifications,
-		checkPermission,
-	};
+        onScheduleRefreshed?.(scheduled.length);
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [checkPermission, onScheduleRefreshed]);
+
+  return {
+    permission,
+    enableNotifications,
+    checkPermission,
+  };
 }

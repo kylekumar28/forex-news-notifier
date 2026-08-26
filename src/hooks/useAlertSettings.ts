@@ -1,142 +1,151 @@
 /** biome-ignore-all assist/source/organizeImports: <bug> */
-import { refreshNotificationSchedule } from "@/services/notificationManager";
+import { logDiagnosticEvent } from '@/services/diagnostics';
+import { refreshNotificationSchedule } from '@/services/notificationManager';
 import {
-	CURRENCIES,
-	type Currency,
-	getNotificationSettings,
-	saveNotificationSettings,
-} from "@/services/notificationSettings";
-import { getScheduledNewsNotificationCount } from "@/services/scheduledNotifications";
-import { useEffect, useRef, useState } from "react";
+  CURRENCIES,
+  type Currency,
+  getNotificationSettings,
+  saveNotificationSettings,
+} from '@/services/notificationSettings';
+import { getScheduledNewsNotificationCount } from '@/services/scheduledNotifications';
+import { useEffect, useRef, useState } from 'react';
 
 export function useAlertSettings() {
-	const [settingsLoaded, setSettingsLoaded] = useState(false);
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
 
-	const [selectedCurrencies, setSelectedCurrencies] = useState<Currency[]>([]);
+  const [selectedCurrencies, setSelectedCurrencies] = useState<Currency[]>([]);
 
-	const [beforeEnabled, setBeforeEnabled] = useState(false);
+  const [beforeEnabled, setBeforeEnabled] = useState(false);
 
-	const [beforeMinutes, setBeforeMinutes] = useState("10");
+  const [beforeMinutes, setBeforeMinutes] = useState('10');
 
-	const [afterEnabled, setAfterEnabled] = useState(false);
+  const [afterEnabled, setAfterEnabled] = useState(false);
 
-	const [afterMinutes, setAfterMinutes] = useState("8");
+  const [afterMinutes, setAfterMinutes] = useState('8');
 
-	const [scheduledCount, setScheduledCount] = useState(0);
+  const [scheduledCount, setScheduledCount] = useState(0);
 
-	const initialLoadComplete = useRef(false);
+  const initialLoadComplete = useRef(false);
 
-	useEffect(() => {
-		async function loadSettings() {
-			try {
-				const settings = await getNotificationSettings();
+  useEffect(() => {
+    async function loadSettings() {
+      try {
+        const settings = await getNotificationSettings();
 
-				setSelectedCurrencies(settings.selectedCurrencies);
+        setSelectedCurrencies(settings.selectedCurrencies);
 
-				setBeforeEnabled(settings.beforeEnabled);
+        setBeforeEnabled(settings.beforeEnabled);
 
-				setBeforeMinutes(settings.beforeMinutes);
+        setBeforeMinutes(settings.beforeMinutes);
 
-				setAfterEnabled(settings.afterEnabled);
+        setAfterEnabled(settings.afterEnabled);
 
-				setAfterMinutes(settings.afterMinutes);
+        setAfterMinutes(settings.afterMinutes);
 
-				const count = await getScheduledNewsNotificationCount();
+        const count = await getScheduledNewsNotificationCount();
 
-				setScheduledCount(count);
+        setScheduledCount(count);
 
-				setSettingsLoaded(true);
-			} catch (error) {
-				console.error("Failed to load notification settings:", error);
-			}
-		}
+        setSettingsLoaded(true);
+      } catch (error) {
+        console.error('Failed to load notification settings:', error);
+      }
+    }
 
-		loadSettings();
-	}, []);
+    loadSettings();
+  }, []);
 
-	useEffect(() => {
-		if (!settingsLoaded) {
-			return;
-		}
+  useEffect(() => {
+    if (!settingsLoaded) {
+      return;
+    }
 
-		// Don't immediately save/rebuild just because
-		// the saved settings were loaded into state.
-		if (!initialLoadComplete.current) {
-			initialLoadComplete.current = true;
-			return;
-		}
+    // Don't immediately save/rebuild just because
+    // the saved settings were loaded into state.
+    if (!initialLoadComplete.current) {
+      initialLoadComplete.current = true;
+      return;
+    }
 
-		const timeout = setTimeout(() => {
-			async function saveAndRefresh() {
-				try {
-					await saveNotificationSettings({
-						selectedCurrencies,
-						beforeEnabled,
-						beforeMinutes,
-						afterEnabled,
-						afterMinutes,
-					});
+    const timeout = setTimeout(() => {
+      async function saveAndRefresh() {
+        try {
+          await saveNotificationSettings({
+            selectedCurrencies,
+            beforeEnabled,
+            beforeMinutes,
+            afterEnabled,
+            afterMinutes,
+          });
 
-					console.log("Notification settings saved");
+          await logDiagnosticEvent('settings_changed', {
+            selectedCurrencies,
+            beforeEnabled,
+            beforeMinutes,
+            afterEnabled,
+            afterMinutes,
+          });
 
-					const scheduled = await refreshNotificationSchedule();
+          console.log('Notification settings saved');
 
-					setScheduledCount(scheduled.length);
-				} catch (error) {
-					console.error("Failed to update notification settings:", error);
-				}
-			}
+          const scheduled = await refreshNotificationSchedule();
 
-			saveAndRefresh();
-		}, 500);
+          setScheduledCount(scheduled.length);
+        } catch (error) {
+          console.error('Failed to update notification settings:', error);
+        }
+      }
 
-		return () => {
-			clearTimeout(timeout);
-		};
-	}, [
-		settingsLoaded,
-		selectedCurrencies,
-		beforeEnabled,
-		beforeMinutes,
-		afterEnabled,
-		afterMinutes,
-	]);
+      saveAndRefresh();
+    }, 500);
 
-	const toggleCurrency = (currency: Currency) => {
-		setSelectedCurrencies((current) =>
-			current.includes(currency)
-				? current.filter((item) => item !== currency)
-				: [...current, currency],
-		);
-	};
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, [
+    settingsLoaded,
+    selectedCurrencies,
+    beforeEnabled,
+    beforeMinutes,
+    afterEnabled,
+    afterMinutes,
+  ]);
 
-	const selectAll = () => {
-		setSelectedCurrencies([...CURRENCIES]);
-	};
+  const toggleCurrency = (currency: Currency) => {
+    setSelectedCurrencies((current) =>
+      current.includes(currency)
+        ? current.filter((item) => item !== currency)
+        : [...current, currency],
+    );
+  };
 
-	const selectNone = () => {
-		setSelectedCurrencies([]);
-	};
+  const selectAll = () => {
+    setSelectedCurrencies([...CURRENCIES]);
+  };
 
-	return {
-		selectedCurrencies,
-		setSelectedCurrencies,
+  const selectNone = () => {
+    setSelectedCurrencies([]);
+  };
 
-		beforeEnabled,
-		setBeforeEnabled,
-		beforeMinutes,
-		setBeforeMinutes,
+  return {
+    selectedCurrencies,
+    setSelectedCurrencies,
 
-		afterEnabled,
-		setAfterEnabled,
-		afterMinutes,
-		setAfterMinutes,
+    beforeEnabled,
+    setBeforeEnabled,
+    beforeMinutes,
+    setBeforeMinutes,
 
-		scheduledCount,
-		setScheduledCount,
+    afterEnabled,
+    setAfterEnabled,
+    afterMinutes,
+    setAfterMinutes,
 
-		toggleCurrency,
-		selectAll,
-		selectNone,
-	};
+    scheduledCount,
+    setScheduledCount,
+
+    toggleCurrency,
+    selectAll,
+    selectNone,
+  };
 }

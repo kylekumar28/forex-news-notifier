@@ -3,6 +3,7 @@ import * as Notifications from 'expo-notifications';
 import { Tabs } from 'expo-router';
 import { useEffect } from 'react';
 
+import { logDiagnosticEvent } from '@/services/diagnostics';
 import { refreshNotificationSchedule } from '@/services/notificationManager';
 
 Notifications.setNotificationHandler({
@@ -32,6 +33,49 @@ export default function TabsLayout() {
     }
 
     refreshSchedule();
+  }, []);
+
+  useEffect(() => {
+    const receivedSubscription = Notifications.addNotificationReceivedListener(
+      async (notification) => {
+        await logDiagnosticEvent('notification_received', {
+          identifier: notification.request.identifier,
+          data: notification.request.content.data,
+        });
+      },
+    );
+
+    const responseSubscription =
+      Notifications.addNotificationResponseReceivedListener(
+        async (response) => {
+          await logDiagnosticEvent('notification_opened', {
+            identifier: response.notification.request.identifier,
+            data: response.notification.request.content.data,
+          });
+        },
+      );
+
+    return () => {
+      receivedSubscription.remove();
+      responseSubscription.remove();
+    };
+  }, []);
+
+  useEffect(() => {
+    async function checkLastNotificationResponse() {
+      const response = await Notifications.getLastNotificationResponseAsync();
+
+      if (!response) {
+        return;
+      }
+
+      await logDiagnosticEvent('notification_opened_from_cold_start', {
+        identifier: response.notification.request.identifier,
+        data: response.notification.request.content.data,
+      });
+    }
+
+    checkLastNotificationResponse();
   }, []);
 
   return (
