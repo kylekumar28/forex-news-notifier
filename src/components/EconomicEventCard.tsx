@@ -33,6 +33,12 @@ export function EconomicEventCard({ event, past }: Props) {
       </Text>
 
       <View style={styles.dataRow}>
+        {event.actual ? (
+          <Text style={[styles.data, past && styles.textPast]}>
+            Actual: {event.actual}
+          </Text>
+        ) : null}
+
         <Text style={[styles.data, past && styles.textPast]}>
           Forecast: {event.forecast || '-'}
         </Text>
