@@ -1,0 +1,22 @@
+name: TradeFence TestFlight Beta
+
+jobs:
+  build_ios:
+    name: Build iOS
+    type: build
+    params:
+      platform: ios
+      profile: production
+
+  testflight:
+    name: Distribute to TestFlight
+    type: testflight
+    needs: [build_ios]
+    params:
+      build_id: ${{ needs.build_ios.outputs.build_id }}
+      external_groups:
+        - TradeFence Beta Testers
+      submit_beta_review: true
+      changelog: |
+        Added actual reported values for released economic events.
+        Improved bottom navigation spacing.
